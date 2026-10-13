@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Module 4: API From the Outside In | CIT 3102 Reviewer</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+ <div class="top-in">
+  <div class="brand">CIT 3102 Midterm Reviewer<small>Systems Integration and Architecture</small></div>
+  <nav class="nav" aria-label="Modules">
+   <a href="index.html" aria-current="page">Module 4</a>
+   <a href="module5.html">Module 5</a>
+   <span title="Coming soon">Quiz (soon)</span>
+  </nav>
+ </div>
+ <div class="toc"><div class="toc-in">
+  <a href="#request">Request / Response</a><a href="#url">URL parts</a><a href="#method">Method</a><a href="#path">Path</a><a href="#query">Query string</a><a href="#header">Header</a><a href="#body">Body</a><a href="#bruno">Browser vs Bruno</a><a href="#status">Status codes</a><a href="#json">JSON</a>
+ </div></div>
+</header>
+<main>
+<h1>Module 4: API From the Outside In</h1>
+<p class="lede">How a client talks to a server: the request, the response, and the JSON that travels inside them.</p>
+
+<section id="request">
+<h2>Request and Response</h2>
+<div class="grid2">
+ <div class="term"><h3>Request</h3><p>Sent by you, received by the server.</p></div>
+ <div class="term"><h3>Response</h3><p>Sent by the server, received by you.</p></div>
+</div>
+</section>
+
+<section id="url">
+<h2>Anatomy of a request</h2>
+<pre><code>GET https://example.com/users/5?active=true</code></pre>
+<div class="tw"><table>
+<tr><th>Part</th><th>Example</th><th>Meaning</th></tr>
+<tr><td>Schema</td><td><code>https://</code></td><td>N/A</td></tr>
+<tr><td>Method</td><td><code>GET</code></td><td>What do I want to do?</td></tr>
+<tr><td>Host</td><td><code>example.com</code></td><td>Which server?</td></tr>
+<tr><td>Path</td><td><code>/user/5</code></td><td>What resource?</td></tr>
+<tr><td>Query</td><td><code>?active=true</code></td><td>Which/filter which ones?</td></tr>
+</table></div>
+</section>
+
+<section id="method">
+<h2>Method</h2>
+<div class="term"><h3>Method</h3>
+<p>Specific action a client requests a server to perform on a resource.</p>
+<ul>
+<li>The server either supports it or refuses; a refusal is a <b>4xx</b> error.</li>
+<li>Chosen by the <b>caller</b>, not the server.</li>
+</ul></div>
+<h4>Types of methods</h4>
+<div class="tw"><table>
+<tr><th>Method</th><th>Does</th><th>Body?</th></tr>
+<tr><td><span class="m">GET</span></td><td>Reads data</td><td>No body</td></tr>
+<tr><td><span class="m">DELETE</span></td><td>Removes data</td><td>No body</td></tr>
+<tr><td><span class="m">POST</span></td><td>Creates data</td><td>Contains a body</td></tr>
+<tr><td><span class="m">PUT</span></td><td>Updates data</td><td>Contains a body</td></tr>
+</table></div>
+</section>
+
+<section id="path">
+<h2>Path</h2>
+<div class="term"><h3>Path</h3>
+<p>Determines what kind of resource and which one.</p>
+<p>Ask yourself: <i>Am I asking about a different thing?</i></p></div>
+<h4>Examples of paths</h4>
+<div class="tw"><table>
+<tr><th>Path</th><th>Means</th></tr>
+<tr><td><code>/users</code></td><td>All of the users</td></tr>
+<tr><td><code>/user/1</code></td><td>User whose ID is 1</td></tr>
+<tr><td><code>/posts</code></td><td>All of the posts</td></tr>
+<tr><td><code>/post/1</code></td><td>Post whose ID is 1</td></tr>
+</table></div>
+</section>
+
+<section id="query">
+<h2>Query string</h2>
+<div class="term"><h3>Query String</h3>
+<p>Optional information in the URL. Specifies extra information, filters, or parameters.</p>
+<ul>
+<li><code>?</code> : start of a query</li>
+<li><code>&amp;</code> : add another query</li>
+</ul></div>
+<h4>Path vs Query</h4>
+<div class="tw"><table>
+<tr><th>Type</th><th>Example</th><th>Meaning</th></tr>
+<tr><td>Path</td><td><code>/post/1</code></td><td>Give me post #1.</td></tr>
+<tr><td>Query String</td><td><code>/posts?userId=1</code></td><td>Give me posts where userId is 1.</td></tr>
+</table></div>
+</section>
+
+<section id="header">
+<h2>Header</h2>
+<div class="term"><h3>Header</h3>
+<p>Hidden data sent with every request and response.</p>
+<ul>
+<li>Contains the authentication when a request needs a key.</li>
+<li>Declares what kind of thing.</li>
+</ul></div>
+<h4>Header examples</h4>
+<pre><code>Content-Type: application/json
+Authorization: Bearer 3|kJ8xQ…</code></pre>
+</section>
+
+<section id="body">
+<h2>Body</h2>
+<div class="term"><h3>Body</h3>
+<p>The actual data sent.</p>
+<p>Only used in <span class="m">POST</span> and <span class="m">PUT</span>.</p></div>
+</section>
+
+<section id="bruno">
+<h2>Browser vs API client (Bruno)</h2>
+<div class="tw"><table>
+<tr><th>Shows the…</th><th>Browser</th><th>Bruno</th></tr>
+<tr><td>Body</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Status Code</td><td>No</td><td>Yes</td></tr>
+<tr><td>Header</td><td>No</td><td>Yes</td></tr>
+<tr><td>Can Send</td><td>GET only</td><td>Any method</td></tr>
+</table></div>
+</section>
+
+<section id="status">
+<h2>Status codes</h2>
+<div class="term"><h3>Status Code</h3><p>Three-digit number returned by the server.</p></div>
+<h4>Classes</h4>
+<div class="tw"><table>
+<tr><th>Class</th><th>Meaning</th><th>Example</th></tr>
+<tr><td class="s1">1xx</td><td>Information</td><td>Request received, continue processing</td></tr>
+<tr><td class="s2">2xx</td><td>Success</td><td>Action was successfully received and completed</td></tr>
+<tr><td class="s3">3xx</td><td>Redirection</td><td>URL changed; look somewhere else</td></tr>
+<tr><td class="s4">4xx</td><td>Client Error</td><td>Request contains bad syntax</td></tr>
+<tr><td class="s5">5xx</td><td>Server Error</td><td>Server failed to fulfill</td></tr>
+</table></div>
+<h4>Specific status codes</h4>
+<div class="tw"><table>
+<tr><th>Code</th><th>Means</th><th>What to do</th></tr>
+<tr><td class="s2">200 OK</td><td>Worked / Found / Changed</td><td>Nothing</td></tr>
+<tr><td class="s2">201 Created</td><td>Created new resource on the server</td><td>Nothing</td></tr>
+<tr><td class="s2">204 No Content</td><td>Resource is deleted / No body sent back</td><td>Nothing</td></tr>
+<tr><td class="s3">301 Moved Permanently</td><td>Resource lives at a new address</td><td>Use new method</td></tr>
+<tr><td class="s4">401 Unauthorized</td><td>Sent no or wrong credentials</td><td>Send a key, or fix message</td></tr>
+<tr><td class="s4">403 Forbidden</td><td>Credentials were valid, but not authorized</td><td>Stop. More keys will not help</td></tr>
+<tr><td class="s4">404 Not Found</td><td>No such resource</td><td>Check your path and ID</td></tr>
+<tr><td class="s4">419 Page Expired</td><td>Failed Cross-Site Request Forgery (CSRF) token validation</td><td>Include the csrf Blade directive</td></tr>
+<tr><td class="s4">422 Unprocessed Content</td><td>Data inside contains validation or semantic errors</td><td>Fix field</td></tr>
+</table></div>
+<div class="note"><h3>422 common causes</h3>
+<ul>
+<li>Missing required fields</li>
+<li>Incorrect data type</li>
+<li>Invalid formatting</li>
+<li>Logical or business rule violation</li>
+<li>Duplicate data</li>
+<li>Missing header</li>
+</ul></div>
+</section>
+
+<section id="json">
+<h2>JSON</h2>
+<div class="term"><h3>JSON (JavaScript Object Notation)</h3><p>Universal standard data format for modern web APIs.</p></div>
+<div class="grid2">
+ <div class="term"><h3>Object <code>{ }</code></h3><p>Bag of keys or values.</p><pre><code>{ "name": "Jasmine", "age": 20 }</code></pre></div>
+ <div class="term"><h3>Array <code>[ ]</code></h3><p>Ordered list counted from 0.</p><pre><code>[ "Apple", "Banana", "Orange" ]</code></pre><p>Apple → <code>[0]</code> &nbsp; Banana → <code>[1]</code> &nbsp; Orange → <code>[2]</code></p></div>
+</div>
+<div class="term" style="margin-top:1rem"><h3>Nesting</h3><p>A value can itself be an object or an array.</p>
+<pre><code>{ "name": "John", "address":
+  { "city": "Manila" } }</code></pre></div>
+<div class="term"><h3>Path</h3>
+<p>A way to reach a value: <code>address</code> → <code>address.city</code></p>
+<p>Designed to navigate, filter, and extract specific values.</p></div>
+
+<h4>JSON example</h4>
+<pre><code>{
+  "id": 1,
+  "name": "Leanne Graham",
+  "username": "Bret",
+  "email": "Sincere@april.biz",
+  "address": {
+    "street": "Kulas Light",
+    "suite": "Apt. 556",
+    "city": "Gwenborough",
+    "zipcode": "92998-3874",
+    "geo": {
+      "lat": "-37.3159",
+      "lng": "81.1496"
+    }
+  },
+  "phone": "1-770-736-8031 x56442",
+  "website": "hildegard.org",
+  "company": {
+    "name": "Romaguera-Crona",
+    "catchPhrase": "Multi-layered client-server neural-net",
+    "bs": "harness real-time e-markets"
+  }
+}</code></pre>
+<h4>Paths example</h4>
+<div class="tw"><table>
+<tr><th>What</th><th>Path</th><th>Value</th></tr>
+<tr><td>The Latitude</td><td><code>address.geo.lat</code></td><td>-37.3159</td></tr>
+<tr><td>User's Email</td><td><code>email</code></td><td>Sincere@april.biz</td></tr>
+<tr><td>City</td><td><code>address.city</code></td><td>Gwenborough</td></tr>
+<tr><td>Longitude</td><td><code>address.geo.lng</code></td><td>81.1496</td></tr>
+<tr><td>Company Name</td><td><code>company.name</code></td><td>Romaguera-Crona</td></tr>
+<tr><td>Suite Number</td><td><code>address.suite</code></td><td>Apt. 556</td></tr>
+</table></div>
+
+<h4>Array example</h4>
+<pre><code>[
+  { "id": 1, "email": "Eliseo@gardner.biz" },
+  { "id": 2, "email": "Jayne_Kuhic@sydney.com" },
+  { "id": 3, "email": "Nikita@garfield.biz" },
+  { "id": 4, "email": "Lew@alysha.tv" },
+  { "id": 5, "email": "Hayden@althea.biz" }
+]</code></pre>
+<h4>Array formatting</h4>
+<div class="tw"><table>
+<tr><th>Position</th><th>Index</th><th>Value</th></tr>
+<tr><td>First</td><td><code>[0]</code></td><td>Eliseo@gardner.biz</td></tr>
+<tr><td>Second</td><td><code>[1]</code></td><td>Jayne_Kuhic@sydney.com</td></tr>
+<tr><td>Third</td><td><code>[2]</code></td><td>Nikita@garfield.biz</td></tr>
+<tr><td>Fourth</td><td><code>[3]</code></td><td>Lew@alysha.tv</td></tr>
+<tr><td>Fifth</td><td><code>[4]</code></td><td>Hayden@althea.biz</td></tr>
+</table></div>
+<div class="tip"><code>[1].email</code> : Second commenter's email.</div>
+</section>
+
+<div class="pager"><span></span><a href="module5.html">Module 5: Build an API →</a></div>
+</main>
+<footer>CIT 3102 · Midterm reviewer</footer>
+</body>
+</html>
