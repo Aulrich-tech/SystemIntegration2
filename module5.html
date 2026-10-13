@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Module 5: Build an API | CIT 3102 Reviewer</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+ <div class="top-in">
+  <div class="brand">CIT 3102 Midterm Reviewer<small>Systems Integration and Architecture</small></div>
+  <nav class="nav" aria-label="Modules">
+   <a href="index.html">Module 4</a>
+   <a href="module5.html" aria-current="page">Module 5</a>
+   <span title="Coming soon">Quiz (soon)</span>
+  </nav>
+ </div>
+ <div class="toc"><div class="toc-in">
+  <a href="#route">Route</a><a href="#routes5">Five routes</a><a href="#webapi">Web vs API</a><a href="#laravel">Laravel</a><a href="#binding">Model binding</a><a href="#validation">Validation</a><a href="#fillable">Fillable</a><a href="#querystring">Query string</a><a href="#auth">Guard &amp; token</a><a href="#json">JSON errors</a><a href="#public">Public vs protected</a><a href="#middleware">Middleware</a><a href="#login">Login</a>
+ </div></div>
+</header>
+<main>
+<h1>Module 5: Build an API</h1>
+<p class="lede">Laravel routes, controllers, validation, mass assignment, and token authentication.</p>
+
+<section id="route">
+<h2>Route</h2>
+<div class="term"><h3>Route</h3>
+<p>A verb and a path combined that tells the server how to direct and handle an incoming request.</p>
+<p>Not a file on a disk, unlike <code>about.php</code>.</p></div>
+<h4>Route example</h4>
+<pre><code>Route::get('/students', [StudentController::class, 'index']);</code></pre>
+<h4>Route components</h4>
+<div class="tw"><table>
+<tr><th>Component</th><th>Meaning</th><th>In the example</th></tr>
+<tr><td>Verb / HTTP Method</td><td>Action type of the request: GET, POST, PUT, DELETE</td><td><code>get</code></td></tr>
+<tr><td>Path</td><td>The URL pattern being requested</td><td><code>/students</code></td></tr>
+<tr><td>Controller</td><td>Class that handles incoming requests</td><td><code>StudentController</code></td></tr>
+<tr><td>Method</td><td>Function inside the controller: Index, Store, Show, Update, Destroy</td><td><code>index</code></td></tr>
+</table></div>
+<div class="tip"><b>Route:</b> connects incoming requests to code.</div>
+</section>
+
+<section id="routes5">
+<h2>Five routes</h2>
+<div class="tw"><table>
+<tr><th>Verb</th><th>Path</th><th>Method</th><th>Purpose</th><th>Code</th></tr>
+<tr><td><span class="m">GET</span></td><td><code>/students</code></td><td>Index</td><td>Read all students</td><td class="s2">200</td></tr>
+<tr><td><span class="m">POST</span></td><td><code>/students</code></td><td>Store</td><td>Create a student</td><td class="s2">201</td></tr>
+<tr><td><span class="m">GET</span></td><td><code>/students/{student}</code></td><td>Show</td><td>Show one student</td><td><span class="s2">200</span> / <span class="s4">404</span></td></tr>
+<tr><td><span class="m">PUT</span></td><td><code>/students/{student}</code></td><td>Update</td><td>Update a student</td><td class="s2">200</td></tr>
+<tr><td><span class="m">DELETE</span></td><td><code>/students/{student}</code></td><td>Destroy</td><td>Delete a student</td><td class="s2">204</td></tr>
+</table></div>
+<div class="term"><h3>apiResource</h3><p>Write all five in one line.</p>
+<pre><code>Route::apiResource('students', StudentController::class)</code></pre></div>
+</section>
+
+<section id="webapi">
+<h2>Web routes vs API routes</h2>
+<div class="grid2">
+ <div class="term"><h3>Web Routes</h3>
+ <p>Built to deliver visual interfaces directly to human users.</p>
+ <ul><li>File: <code>routes/web.php</code></li><li>Contains a Session and CSRF Token.</li><li><b>Cannot</b> POST from Bruno.</li></ul></div>
+ <div class="term"><h3>API Routes</h3>
+ <p>Built for seamless data exchange between software and programs.</p>
+ <ul><li>File: <code>routes/api.php</code></li><li><b>Can</b> POST from Bruno.</li></ul></div>
+</div>
+</section>
+
+<section id="laravel">
+<h2>Laravel project</h2>
+<div class="term"><h3>Laravel</h3>
+<p>Open-source PHP backend web framework.</p>
+<p>Handles server-side logic, database interaction, authentication, and application routing.</p></div>
+<div class="term"><h3>Creating routes/api.php</h3>
+<p>A fresh Laravel project does <b>not</b> contain <code>routes/api.php</code>. To create it, use:</p>
+<pre><code>php artisan install:api</code></pre>
+<p>Everything in the file is served under <code>/api</code>.</p>
+<p><code>/students</code> = <code>/api/students</code></p>
+<div class="note"><p>Your notes add: "Causes more wasted minutes" (forgetting the <code>/api</code> prefix is the classic time sink).</p></div></div>
+</section>
+
+<section id="binding">
+<h2>Route model binding</h2>
+<div class="term"><h3>Route Model Binding</h3>
+<p>Laravel automatically looks for a corresponding record based on the placeholder value.</p>
+<p>Placeholder and controller parameters <b>MUST match</b>.</p></div>
+<pre><code>Route::get('/students/{student}', [StudentController::class, 'show']);
+
+public function show(Student $student) {
+    return $student;
+}</code></pre>
+<div class="tw"><table>
+<tr><th>Term</th><th>Value</th></tr>
+<tr><td>Placeholder</td><td><code>{student}</code></td></tr>
+<tr><td>Parameter</td><td><code>$student</code></td></tr>
+</table></div>
+</section>
+
+<section id="validation">
+<h2>Validation</h2>
+<div class="term"><h3>Validation</h3>
+<p>Process of inspecting and verifying the API operates accurately and securely.</p>
+<div class="term"><h3>validate()</h3><p>Returns either clean data or stops the request with <span class="s4">422</span> and a list of which fields failed.</p></div>
+<div class="term"><h3>Example</h3><p><code>Student::create($data)</code> does not run when the validation fails.</p></div></div>
+<h4>Validation example</h4>
+<pre><code>public function store(Request $request) {
+    $data = $request-&gt;validate([
+        'name'    =&gt; 'required|string|max:255',
+        'section' =&gt; 'required|string|max:10',
+        'units'   =&gt; 'required|integer|min:0|max:30',
+    ]);
+    return response()-&gt;json(Student::create($data), 201);
+}</code></pre>
+</section>
+
+<section id="fillable">
+<h2>Fillable and mass assignment</h2>
+<div class="term"><h3>Fillable</h3><p>Specifies which fields are allowed to be set through mass assignment.</p></div>
+<div class="term"><h3>Mass Assignment</h3><p>Setting multiple model fields using an array of data.</p></div>
+<div class="term"><h3>MassAssignmentException</h3><p>Error when Laravel refuses mass assignment because the fields are not permitted.</p></div>
+<h4>Fillable example</h4>
+<pre><code>class Student extends Model {
+    protected $fillable = ['name', 'section', 'units'];
+}</code></pre>
+</section>
+
+<section id="querystring">
+<h2>Query string in Laravel</h2>
+<div class="term"><h3>Query String</h3><p>Allows a request to include optional information or filters in the URL.</p></div>
+<h4>Query example</h4>
+<pre><code>public function index(Request $request) {
+    $query = Student::query();
+    foreach (['name', 'section', 'units'] as $field) {
+        if ($request-&gt;query($field)) {
+            $query-&gt;where($field, $request-&gt;query($field));
+        }
+    }
+    return $query-&gt;get();
+}</code></pre>
+<p>Example call: <code>GET /api/students?section=A1</code></p>
+</section>
+
+<section id="auth">
+<h2>Guard and token</h2>
+<div class="term"><h3>Guard</h3>
+<p>The authentication mechanism or rule used to determine whether a request is authenticated.</p>
+<p>Fields listed are not allowed to be mass-assigned.</p>
+<div class="note"><p>That second line sits under Guard in your notes. It describes <code>$guarded</code>, the opposite of <code>$fillable</code>, so keep the two apart.</p></div></div>
+<div class="term"><h3>Token</h3>
+<p>Used to prove authentication when accessing protected routes.</p>
+<p>Deleted during logout.</p></div>
+<h4>Token sequence</h4>
+<ol class="seq">
+<li><code>POST /api/register</code> → <span class="s2">201</span> + a token</li>
+<li><code>POST /api/login</code> → <span class="s2">200</span> + a token</li>
+<li><code>GET /api/students</code> without a token → <span class="s4">401</span>, no token.</li>
+<li><code>GET /api/students</code> with valid token → <span class="s2">200</span></li>
+<li><code>POST /api/logout</code> → <span class="s2">204</span>, token destroyed.</li>
+<li><code>GET /api/students</code> using the same token → <span class="s4">401</span>, same token, now dead.</li>
+</ol>
+</section>
+
+<section id="json">
+<h2>Errors as JSON, headers</h2>
+<div class="term"><h3>Error as JSON</h3>
+<p>Laravel can return errors in JSON format instead of an HTML webpage.</p>
+<p><code>/api/*</code> always returns JSON.</p></div>
+<div class="term"><h3>Accept Header</h3>
+<p>Tells the server what response format the client wants.</p>
+<p>Without it, Laravel may return an HTML error or redirect to another page.</p>
+<h4>Accept header example</h4>
+<pre><code>Accept: application/json</code></pre></div>
+<div class="term"><h3>Content-Type Header</h3><p>Tells the server what format the request body uses.</p></div>
+</section>
+
+<section id="public">
+<h2>Public vs protected routes</h2>
+<div class="grid2">
+ <div class="term"><h3>Registrations and Logins</h3><p>Sit <b>outside</b> the guard; they are how a caller gets a token.</p>
+ <pre><code>Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);</code></pre></div>
+ <div class="term"><h3>Logouts</h3><p>Sit <b>inside</b>; you need a token to invalidate it.</p></div>
+</div>
+<div class="grid2" style="margin-top:1rem">
+ <div class="term"><h3>Public Route</h3><p>A route that can be accessed without a token.</p><ul><li>Registration</li><li>Login</li></ul></div>
+ <div class="term"><h3>Protected Route</h3><p>A route that requires authentication.</p><ul><li>Logout</li><li><code>/me</code></li><li>Five Student Routes</li></ul></div>
+</div>
+</section>
+
+<section id="middleware">
+<h2>Middleware</h2>
+<div class="term"><h3>Middleware Line</h3>
+<p>Code that runs during request handling, often to check or process a request before it reaches the controller.</p></div>
+<h4>Middleware example</h4>
+<pre><code>Route::middleware('auth:sanctum')-&gt;group(function () {
+    // protected routes go here
+});</code></pre>
+<div class="tip">Only applies to everything inside the group.</div>
+</section>
+
+<section id="login">
+<h2>Login and invalid credentials</h2>
+<pre><code>if (! $user || ! Hash::check($data['password'], $user-&gt;password)) {
+    return response()-&gt;json(['message' =&gt; 'Invalid credentials'], 401);
+}</code></pre>
+<div class="term"><p>If the email does not exist <b>or</b> the password does not match, return <b>Invalid credentials</b> <span class="s4">401</span>.</p></div>
+<div class="note"><p>Your notes end with: "Nothing is automatically produced."</p></div>
+</section>
+
+<div class="pager"><a href="index.html">← Module 4: API From the Outside In</a><span></span></div>
+</main>
+<footer>CIT 3102 · Midterm reviewer</footer>
+</body>
+</html>
