@@ -5,6 +5,51 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Quiz | CIT 3102 Reviewer</title>
 <link rel="stylesheet" href="styles.css">
+<style>
+:root{--good:var(--ok);--bad:var(--err)}
+.qwrap{display:grid;grid-template-columns:1fr 16rem;gap:1.2rem;align-items:start}
+.qbox{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.qhead{display:flex;justify-content:space-between;gap:1rem;padding:.7rem 1rem;background:var(--accent-soft);border-bottom:1px solid var(--line);font-weight:700}
+.qhead span{font-weight:400;color:var(--muted)}
+.qbody{padding:1.2rem 1rem}
+.qtext{font-size:1.15rem;margin:0 0 1rem;max-width:none}
+.opts{display:grid;gap:.6rem}
+.opt{display:flex;gap:.8rem;align-items:flex-start;width:100%;text-align:left;padding:.75rem 1rem;border:2px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt i{flex:none;width:1.3rem;height:1.3rem;border:2px solid var(--muted);border-radius:50%;margin-top:.15rem;display:grid;place-items:center;font-style:normal;font-size:.8rem;font-weight:700;line-height:1}
+.opt:disabled{cursor:default;color:var(--ink)}
+.opt.good{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+.opt.good i{border-color:var(--good);background:var(--good);color:var(--surface)}
+.opt.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.opt.bad i{border-color:var(--bad);background:var(--bad);color:var(--surface)}
+.fb{margin-top:1rem;padding:.7rem 1rem;border-radius:6px;font-weight:700}
+.fb.good{background:color-mix(in srgb,var(--good) 15%,var(--surface));color:var(--good)}
+.fb.bad{background:color-mix(in srgb,var(--bad) 15%,var(--surface));color:var(--bad)}
+.fb span{display:block;font-weight:400;color:var(--ink)}
+.qfoot{display:flex;justify-content:space-between;gap:1rem;padding:.8rem 1rem;border-top:1px solid var(--line);background:var(--bg)}
+.btn{padding:.55rem 1.2rem;border-radius:6px;border:1px solid var(--accent);background:var(--surface);color:var(--accent);font:inherit;font-weight:700;cursor:pointer;min-height:2.75rem}
+.btn.pri{background:var(--accent);color:var(--surface)}
+.btn:disabled{opacity:.4;cursor:default}
+.side{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:1rem;position:sticky;top:5rem}
+.side h2{font-size:1rem;margin:0 0 .6rem;padding:0;border:0}
+.nums{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem}
+.nums button{aspect-ratio:1;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);font:inherit;font-size:.85rem;cursor:pointer}
+.nums .cur{outline:3px solid var(--accent);outline-offset:1px}
+.nums .good{background:color-mix(in srgb,var(--good) 18%,var(--surface));border-color:var(--good)}
+.nums .bad{background:color-mix(in srgb,var(--bad) 18%,var(--surface));border-color:var(--bad)}
+.stat{margin:.8rem 0 0;font-size:.9rem;color:var(--muted)}
+.bar2{height:8px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:.4rem}
+.bar2 b{display:block;height:100%;background:var(--accent);width:0}
+.score{font-size:2.4rem;font-weight:700;margin:.2rem 0}
+.miss{margin:.6rem 0;padding:.6rem .8rem;border:1px solid var(--line);border-radius:6px}
+.miss small{display:block;color:var(--muted)}
+.q-pick{display:grid;gap:.75rem;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));margin:1rem 0}
+.q-pick button{font:inherit;text-align:left;cursor:pointer;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:6px;padding:.9rem 1rem;min-height:3.25rem;font-weight:700}
+.q-pick button:hover{background:var(--accent-soft)}
+.q-pick small{display:block;color:var(--muted);font-weight:400}
+.qfoot{flex-wrap:wrap}
+@media (max-width:760px){.qwrap{grid-template-columns:1fr}.side{position:static;order:2}.nums{grid-template-columns:repeat(10,1fr)}.nums button{font-size:.7rem}}
+</style>
 </head>
 <body>
 <header class="top">
@@ -18,11 +63,136 @@
  </div>
 </header>
 <main>
-<h1>Quiz</h1>
-<p class="lede">One question at a time. Click an answer to see the result, then continue.</p>
-<div id="app" aria-live="polite"></div>
+<h1>Quiz: Modules 4 and 5</h1>
+<p class="lede" id="lede"></p>
+<div id="pick" hidden></div>
+<div class="qwrap" id="qwrap" hidden>
+ <div class="qbox" id="box" aria-live="polite"></div>
+ <aside class="side"><h2>Questions</h2><div class="nums" id="nums"></div>
+ <p class="stat" id="stat"></p><div class="bar2"><b id="prog"></b></div></aside>
+</div>
 </main>
 <footer>CIT 3102 · Midterm reviewer</footer>
-<script src="quiz.js"></script>
+<script>
+// [question, CORRECT answer, wrong, wrong, ...]. Option order is shuffled each attempt (True/False stays in order).
+const ALL=[
+["Which URL asks for exactly one resource rather than a collection?","https://jsonplaceholder.typicode.com/users/3","https://jsonplaceholder.typicode.com/comments?postId=3","https://jsonplaceholder.typicode.com/posts?userId=3","https://jsonplaceholder.typicode.com/users"],
+["From its address bar, a web browser can only send GET requests.","True","False"],
+["A request has a method, a host, a path and a query string. Which one is never written inside the URL itself?","The method","The path","The host","The query string"],
+["A GET request carries a body.","False","True"],
+["By common convention, how does /users differ from /users/7 ?","/users is all of them, /users/7 is one of them","/users is a query string, /users/7 is a path","/users and /users/7 mean the same thing","/users is one of them, /users/7 is all of them"],
+["You want to create a new record on a server. Which method do you send?","POST","GET","DELETE","PUT"],
+["Which part of a request is sent every time but hidden from you in a browser?","The headers","The query string","The path","The body"],
+["In GET https://jsonplaceholder.typicode.com/posts?userId=1 , which part is the path?","/posts","jsonplaceholder.typicode.com","?userId=1","https://"],
+["In GET https://jsonplaceholder.typicode.com/posts?userId=1 , which part is the host?","jsonplaceholder.typicode.com","/posts","GET","userId=1"],
+["You remove one piece from a URL and find you are now asking about a completely different resource. Where did that piece belong?","In the path","In the body","In the query string","In the headers"],
+["In https://jsonplaceholder.typicode.com/comments?postId=5 , what is the query string?","postId=5","jsonplaceholder.typicode.com","/comments","comments?postId=5"],
+["Which URL asks only for the posts written by user 2?","https://jsonplaceholder.typicode.com/posts?userId=2","https://jsonplaceholder.typicode.com/posts/2","https://jsonplaceholder.typicode.com/userId=2/posts","https://jsonplaceholder.typicode.com/posts/userId=2"],
+["The server's database crashes while it is answering your request. What class comes back?","5xx","2xx","3xx","4xx"],
+["Your credentials are accepted and the server still refuses the request. Which code fits?","403 Forbidden","500 Internal Server Error","401 Unauthorized","404 Not Found"],
+["A status code in the 4xx class tells you that","the request was built wrong on your side","the request worked exactly as asked","the server failed on its own side","the resource has moved somewhere else"],
+["A 5xx status code points at a problem on the server's side, not yours.","True","False"],
+["A 404 response still arrives with a status line, headers and a body.","True","False"],
+["You send a request with a filter and get 200, but the data comes back unfiltered. What most likely happened?","The server ignored a parameter it did not recognise","The filter should have been sent as a header","The server answered with a 4xx instead","The request never reached the server at all"],
+["You mistype a path as /userz/1 and the server answers you. What class is the status code?","4xx","5xx","2xx","3xx"],
+["A request returns 301. What should the caller do next?","Send the request to the new address","Wait a few minutes and retry","Send credentials and try it again","Fix the path, because nothing is there"],
+["A response is {\"user\":{\"contact\":{\"email\":\"ana@mail.com\"}}} . What does user.contact.email give you?","ana@mail.com","{\"email\":\"ana@mail.com\"}","{\"contact\":{\"email\":\"ana@mail.com\"}}","user"],
+["A request returns [{\"id\":11},{\"id\":12},{\"id\":13}] . What is the path to the id of the second object?","[1].id","[1]","[2].id","id[2]"],
+["In JSON, what do curly braces mark?","An object, holding keys and values","An array, holding an ordered list","A single text value","A note left by the developer"],
+["Given {\"id\":1,\"address\":{\"city\":\"Gwenborough\"}} , what is the path to the city?","address.city","Gwenborough","city.address","city"],
+["In [{\"email\":\"a@x.com\"},{\"email\":\"b@x.com\"},{\"email\":\"c@x.com\"}] , which path gives c@x.com ?","[2].email","[3].email","email[3]","[2]"],
+["Given {\"company\":{\"name\":\"Romaguera-Crona\"}} , what is the path to the company name?","company.name","company","name.company","Romaguera-Crona"],
+["In JSON, the first item in an array sits at index 1.","False","True"],
+["In a JSON path, what does each dot mean?","Go one level deeper in","Mark the end of a key","Separate two responses","Join two values together"],
+["In JSON, what do square brackets mark?","An array, counted from zero","The end of the response","An object, holding keys and values","A single number value"],
+["Given {\"address\":{\"geo\":{\"lat\":\"-37.3159\"}}} , what is the path to the latitude?","address.geo.lat","geo.lat","lat.geo.address","address.lat"],
+["GET /api/students/99999 asks for a record that does not exist. What comes back?","404","204","500","422"],
+["A brand-new Laravel project has no routes/api.php. Which command creates it?","php artisan install:api","php artisan make:api","php artisan route:api","php artisan migrate --api"],
+["Why does a route in routes/api.php not need CSRF protection?","It is stateless, so there is no session cookie to ride on","Bruno attaches a CSRF token to each request","API tokens are encrypted and cookies are not","Laravel turns CSRF off for every POST request"],
+["You put an API route in routes/web.php by mistake, then send a POST to it from Bruno. What comes back?","419, because web.php expects a CSRF token","404, because the route was never registered","500, because the controller cannot be found","200, because the route still works fine"],
+["GET /api/students returns everyone, but GET /api/students?section=IT2E returns one section. Where does section arrive from?","The query string, read with $request->query('section')","The request body, read with $request->input()","The Authorization header on the request","The route placeholder, read with {section}"],
+["POST /api/logout returned 204, then the very same GET that worked a second ago returned 401. Why?","Logout destroyed the token, so the caller is a stranger again","The server restarted and forgot the session","The route was taken out of the protected group","The database connection was closed by logout"],
+["Why does a successful DELETE return 204 rather than 200 with an empty body?","204 states outright that there is no body to read","destroy() in Laravel cannot return a 200 at all","200 is only allowed on GET requests, never DELETE","204 skips the database, so it answers faster"],
+["You write the route as '/students/{id}' but the method signature is show(Student $student). What happens?","Laravel never looks the record up, so $student arrives empty","The route returns 404 before the controller runs","Laravel still looks it up, because the position matches","Laravel throws a MassAssignmentException"],
+["PUT /api/students/3 succeeds and the record is changed. What should come back?","200 with the updated record","201, because the record is different now","204, because nothing new was created","202, because the change was accepted"],
+["What does a request through routes/web.php get that a request through routes/api.php does not?","A session and CSRF protection","Automatic route model binding","A JSON response instead of HTML","A working database connection"],
+["Which verb and path updates one existing student?","PUT /api/students/{student}","PATCH /api/students","POST /api/students/{student}","PUT /api/students"],
+["You POST valid JSON to create a student and get a MassAssignmentException. What is missing?","The field is not listed in the model's $fillable","The Authorization header on the request","The migration for that table was never run","The route is sitting in web.php, not api.php"],
+["DELETE /api/students/3 succeeds. What should come back?","204","404","201","200"],
+["What separates a 401 from a 403?","401 is I do not know you; 403 is I know you, and no","401 is for people; 403 is for other programs","401 is a client error; 403 is a server error","401 is an expired token; 403 is a missing token"],
+["POST /api/students arrives with a required field missing and validation fails. What comes back?","422","500","404","400"],
+["Route::get('/students/{student}', [StudentController::class, 'show']); and the method is show(Student $student). What makes Laravel look the record up for you?","The placeholder name matches the type-hinted variable","The route sits inside routes/api.php","The controller was generated with the --api flag","The model lists that column in $fillable"],
+["Which request filters on two fields at the same time?","GET /api/students?section=IT2E&units=3","GET /api/students/IT2E/3","GET /api/students?filter=section,units","GET /api/students?section=IT2E/units=3"],
+["A caller sends GET /api/students with no Authorization header. What comes back?","401","403","404","422"],
+["Validation fails, and instead of JSON the caller gets a full HTML error page. What was never added?","shouldRenderJsonWhen in bootstrap/app.php","php artisan install:api, which makes api.php","The auth:sanctum middleware on the group","The $fillable array on the model"],
+["index() loops over a fixed array ['name', 'section', 'units'] and filters only on those. Why is that list hard-coded?","So a caller cannot filter on a column you never meant to expose","Because Laravel allows at most three active filters","Because a longer list would make the query slower","Because those are the only columns in the table"],
+["Which single line registers exactly the five API routes and nothing more?","Route::apiResource('students', StudentController::class);","Route::api('students', StudentController::class);","Route::crud('students', StudentController::class);","Route::resource('students', StudentController::class);"],
+["Why can login not sit inside the auth:sanctum group?","You would need a token to reach the route that issues one","Sanctum has no support for a login route","The group only accepts routes that return JSON","login uses POST and the group only accepts GET"],
+["GET /students/1 returns 404, although the route is in routes/api.php and the record exists. What is wrong?","The caller left the /api prefix off the path","The Authorization header was not sent","The record was soft-deleted by an earlier call","The placeholder does not match the method variable"],
+["A caller sends GET /api/students with no query string at all. What does the filter loop do?","Every if is skipped, so the whole list comes back","It returns 422, because no filter was supplied","It returns an empty list, since nothing matched","It returns 400 and asks for a filter"],
+["What does $fillable on a model actually control?","Which columns a caller is allowed to set","Which columns the database requires","Which columns the index() filter accepts","Which columns a caller is allowed to read"],
+["Which two routes must stay outside the auth:sanctum group?","register and login","register and me","logout and me","login and logout"],
+["php artisan make:controller StudentController --api creates a controller with which methods?","index, store, show, update, destroy","index, show, update, destroy","create, read, update, delete","index, create, store, show, edit, update, destroy"],
+["A route is registered in routes/api.php as Route::get('/students', ...). What full path must a caller send?","/api/students","/routes/api/students","/students","/api/api/students"],
+["Route::middleware('auth:sanctum')->group(function () { ... }); What does that one line do?","Every route inside the group now demands a valid token","It makes those routes answer in JSON, not HTML","Every route inside the group is handed a fresh token","It signs the caller in before the routes run"],
+["POST /api/students succeeds and a new record now exists. What should come back?","201","202","200","204"]
+];
+const SETS=[
+ {name:"Module 4 quiz",qs:ALL.slice(0,30)},
+ {name:"Module 5 quiz",qs:ALL.slice(30)},
+ {name:"All 60 questions",qs:ALL}
+];
+const $=id=>document.getElementById(id);
+let Q=ALL,title="",order,ans,cur;
+const sh=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const isTF=q=>q.length===3&&(q[1]==="True"||q[1]==="False");
+function home(){
+ $("qwrap").hidden=true;const p=$("pick");p.hidden=false;p.innerHTML="";
+ $("lede").textContent="Choose a set of questions. Click an answer to see the result, then press Next.";
+ const g=document.createElement("div");g.className="q-pick";
+ SETS.forEach(s=>{const b=document.createElement("button");b.type="button";b.textContent=s.name;
+  const m=document.createElement("small");m.textContent=s.qs.length+" questions";b.appendChild(m);
+  b.onclick=()=>start(s.name,s.qs.slice());g.appendChild(b)});
+ p.appendChild(g);window.scrollTo({top:0})}
+function start(name,qs){Q=qs;title=name;$("pick").hidden=true;$("qwrap").hidden=false;
+ $("lede").textContent=name+": "+qs.length+" multiple-choice items. Click an answer to see the result, then press Next.";
+ order=Q.map(q=>isTF(q)?(q[1]==="True"?[0,1]:[1,0]):sh(q.slice(1).map((_,i)=>i)));ans=Q.map(()=>null);cur=0;render()}
+function part(i){return ALL.indexOf(Q[i])<30?"Module 4: API From the Outside In":"Module 5: Build an API"}
+function pick(k){if(ans[cur]!==null)return;ans[cur]=k;render()}
+function go(i){cur=i;render();window.scrollTo({top:0})}
+function side(){
+ $("nums").innerHTML="";
+ Q.forEach((_,i)=>{const b=document.createElement("button");b.type="button";b.textContent=i+1;b.setAttribute("aria-label","Question "+(i+1));
+  if(ans[i]!==null)b.className=ans[i]===0?"good":"bad";if(i===cur)b.classList.add("cur");b.onclick=()=>go(i);$("nums").appendChild(b)});
+ const d=ans.filter(a=>a!==null).length;$("stat").textContent=d+" of "+Q.length+" answered";$("prog").style.width=d/Q.length*100+"%"}
+function render(){
+ side();const box=$("box");
+ if(cur>=Q.length){results(box);return}
+ const q=Q[cur],a=ans[cur];
+ box.innerHTML='<div class="qhead">Question '+(cur+1)+' <span>'+part(cur)+' | 1 pt</span></div><div class="qbody"><p class="qtext"></p><div class="opts"></div><div id="fb"></div></div><div class="qfoot"><button type="button" class="btn" id="prev">Previous</button><button type="button" class="btn pri" id="next"></button></div>';
+ box.querySelector(".qtext").textContent=q[0];
+ const o=box.querySelector(".opts");
+ order[cur].forEach(k=>{const b=document.createElement("button");b.type="button";b.className="opt";b.innerHTML="<i></i><span></span>";b.lastChild.textContent=q[k+1];
+  if(a!==null){b.disabled=true;if(k===0){b.classList.add("good");b.firstChild.textContent="\u2713"}else if(k===a){b.classList.add("bad");b.firstChild.textContent="\u2715"}}
+  else b.onclick=()=>pick(k);o.appendChild(b)});
+ if(a!==null){const f=document.createElement("div");f.className="fb "+(a===0?"good":"bad");
+  f.innerHTML=(a===0?"Correct!":"Incorrect.")+"<span></span>";f.lastChild.textContent=a===0?"":"Correct answer: "+q[1];$("fb").appendChild(f)}
+ $("prev").disabled=cur===0;$("prev").onclick=()=>go(cur-1);
+ const n=$("next");n.textContent=cur===Q.length-1?"Finish":"Next";n.disabled=a===null;n.onclick=()=>go(cur+1);
+}
+function results(box){
+ const s=ans.filter(a=>a===0).length,un=ans.filter(a=>a===null).length;
+ box.innerHTML='<div class="qhead">'+title+': results</div><div class="qbody"><div class="score"></div><p></p><div id="ml"></div></div><div class="qfoot"><button type="button" class="btn" id="back">Review questions</button><button type="button" class="btn" id="retry">Retry missed only</button><button type="button" class="btn" id="other">Choose another quiz</button><button type="button" class="btn pri" id="again">Retake quiz</button></div>';
+ box.querySelector(".score").textContent=s+" / "+Q.length+" ("+Math.round(s/Q.length*100)+"%)";
+ box.querySelector("p").textContent=un?un+" question(s) unanswered.":(s===Q.length?"Perfect score!":"Missed items are listed below.");
+ Q.forEach((q,i)=>{if(ans[i]===0)return;const d=document.createElement("div");d.className="miss";d.innerHTML="<small></small><b></b><div></div>";
+  d.children[0].textContent="Question "+(i+1);d.children[1].textContent=q[0];d.children[2].textContent=ans[i]===null?"Unanswered. Correct: "+q[1]:"Your answer: "+q[ans[i]+1]+" | Correct: "+q[1];$("ml").appendChild(d)});
+ $("back").onclick=()=>go(0);$("again").onclick=()=>{start(title,Q);window.scrollTo({top:0})};
+ const missed=Q.filter((_,i)=>ans[i]!==0);
+ if(missed.length){$("retry").onclick=()=>{start(title.replace(/ \(missed\)$/,"")+" (missed)",missed);window.scrollTo({top:0})}}else $("retry").hidden=true;
+ $("other").onclick=home;
+}
+home();
+</script>
 </body>
 </html>
