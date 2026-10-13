@@ -59,3 +59,36 @@ tr:last-child td{border-bottom:0}
 footer{text-align:center;color:var(--muted);font-size:.85rem;padding:1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom,0))}
 @media(max-width:34rem){body{font-size:1rem}.brand small{display:none}.term{padding:.75rem}}
 @media print{.top{position:static}.toc{display:none}}
+/* ---- Quiz (Canvas style) ---- */
+.q-pick{display:grid;gap:.75rem;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));margin:1rem 0}
+.q-pick button{font:inherit;text-align:left;cursor:pointer;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:.4rem;padding:.9rem 1rem;min-height:3.25rem}
+.q-pick button:hover{background:var(--accent-soft)}
+.q-pick small{display:block;color:var(--muted)}
+.qc{background:var(--surface);border:1px solid var(--line);border-radius:.4rem;overflow:hidden;margin-top:1rem}
+.qc-head{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.8rem 1rem;background:var(--bg);border-bottom:1px solid var(--line);border-top:3px solid var(--line);font-weight:700}
+.qc.ok .qc-head{border-top-color:var(--ok)}.qc.bad .qc-head{border-top-color:var(--err)}
+.qc-body{padding:1rem}
+.qc-q{margin:0 0 1rem;max-width:none;font-size:1.1rem}
+.qc-bar{height:.4rem;background:var(--line)}
+.qc-bar i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.opts{list-style:none;margin:0;padding:0}
+.opts li{margin:0;border-top:1px solid var(--line)}
+.opt{display:flex;align-items:center;gap:.7rem;width:100%;font:inherit;text-align:left;background:none;color:var(--ink);border:0;padding:.75rem .25rem;min-height:3rem;cursor:pointer}
+.opt:hover:not(:disabled){background:var(--accent-soft)}
+.opt:disabled{cursor:default}
+.dot{flex:none;width:1.1rem;height:1.1rem;border:2px solid var(--muted);border-radius:50%}
+.mark{flex:none;width:1.6rem;height:1.6rem;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-weight:700;font-size:.9rem}
+.opt.right{background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.opt.wrong{background:color-mix(in srgb,var(--err) 14%,transparent)}
+.opt.picked .dot{background:var(--ink);box-shadow:inset 0 0 0 3px var(--surface)}
+.mark.c{background:var(--ok)}.mark.x{background:var(--err)}.mark.a{background:#6b7885}
+.fb{margin:1rem 0 0;padding:.7rem 1rem;border-radius:.4rem;font-weight:700}
+.fb.ok{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.fb.bad{background:color-mix(in srgb,var(--err) 15%,transparent);color:var(--err)}
+.btn{font:inherit;font-weight:700;cursor:pointer;border:0;border-radius:.4rem;padding:.7rem 1.3rem;min-height:2.75rem;background:var(--accent);color:#fff}
+@media(prefers-color-scheme:dark){.btn{color:#0a1218}}
+.btn.alt{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.row{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
+.score{font-size:clamp(2rem,8vw,3.2rem);font-weight:700;margin:.2rem 0}
+.miss{margin:0 0 .75rem;padding:.7rem 1rem;background:var(--bg);border-left:5px solid var(--err);border-radius:.25rem .5rem .5rem .25rem}
+.miss p{margin:.2rem 0}
